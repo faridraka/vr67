@@ -1,49 +1,41 @@
 using UnityEngine;
+using TMPro;
 
 public class CameraRaycast : MonoBehaviour
 {
     [SerializeField] private float rayDistance = 3f;
-    [SerializeField] private LayerMask interactLayer = 1 << 3;
-    [SerializeField] private Color highlightColor = Color.yellow;
+    [SerializeField] private LayerMask interactLayer;
+    [SerializeField] private float highlightWidth = 5f;
 
-    private Renderer[] currentRenderers;
-    private Material[][] originalMaterials;
-    private Material highlightMaterial;
+    [Header("UI")]
+    [SerializeField] private TextMeshProUGUI titleText;
+    [SerializeField] private TextMeshProUGUI actionText;
 
-    private void Start()
+    private Outline currentOutline;
+
+    void Start()
     {
-        highlightMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        highlightMaterial.color = highlightColor;
+        ClearUI();
     }
 
-    private void Update()
+    void Update()
     {
         RaycastCheck();
     }
 
-    private void RaycastCheck()
+    void RaycastCheck()
     {
-        ClearHighlight();
+        Outline newOutline = null;
+        GameObject hitObject = null;
 
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, rayDistance, interactLayer))
         {
-            currentRenderers = hit.collider.GetComponentsInChildren<Renderer>();
+            hitObject = hit.collider.gameObject;
 
-            originalMaterials = new Material[currentRenderers.Length][];
+            newOutline = hit.collider.GetComponentInParent<Outline>();
 
-            for (int i = 0; i < currentRenderers.Length; i++)
-            {
-                originalMaterials[i] = currentRenderers[i].materials;
-
-                Material[] newMaterials = new Material[currentRenderers[i].materials.Length];
-
-                for (int j = 0; j < newMaterials.Length; j++)
-                {
-                    newMaterials[j] = highlightMaterial;
-                }
-
-                currentRenderers[i].materials = newMaterials;
-            }
+            if (newOutline == null)
+                newOutline = hit.collider.GetComponentInChildren<Outline>();
 
             if (Input.GetKeyDown(KeyCode.E))
             {
@@ -51,22 +43,54 @@ public class CameraRaycast : MonoBehaviour
             }
         }
 
+        if (newOutline != currentOutline)
+        {
+            if (currentOutline != null)
+                currentOutline.OutlineWidth = 0f;
+
+            currentOutline = newOutline;
+
+            if (currentOutline != null)
+                currentOutline.OutlineWidth = highlightWidth;
+        }
+
+        if (hitObject != null)
+        {
+            UpdateUI(hitObject);
+        }
+        else
+        {
+            ClearUI();
+        }
+
         Debug.DrawRay(transform.position, transform.forward * rayDistance, Color.green);
     }
 
-    private void ClearHighlight()
+    void UpdateUI(GameObject obj)
     {
-        if (currentRenderers == null) return;
+        titleText.text = "Object: " + obj.name;
 
-        for (int i = 0; i < currentRenderers.Length; i++)
+        if (obj.CompareTag("Barrel"))
         {
-            if (currentRenderers[i] != null)
-            {
-                currentRenderers[i].materials = originalMaterials[i];
-            }
+            actionText.text = "Kamu bisa push dengan mouse";
         }
+        else if (obj.CompareTag("Excavator"))
+        {
+            actionText.text = "No Action";
+        }
+        else if (obj.CompareTag("Traffic Alert"))
+        {
+            actionText.text = "No Action";
+        }
+        else
+        {
+            actionText.text = "";
+        }
+    }
 
-        currentRenderers = null;
-        originalMaterials = null;
+    void ClearUI()
+    {
+        titleText.text = "";
+        actionText.text = "";
     }
 }
