@@ -15,17 +15,12 @@ public class CameraRaycast : MonoBehaviour
 
     void Start()
     {
-    Debug.Log("CameraRaycast aktif");
-    ClearUI();
+        Debug.Log("CameraRaycast aktif");
+        ClearUI();
     }
     void Update()
     {
-    if (Input.GetKeyDown(KeyCode.E))
-    {
-        Debug.Log("E ditekan");
-    }
-
-    RaycastCheck();
+        RaycastCheck();
     }
     void RaycastCheck()
     {
@@ -41,17 +36,24 @@ public class CameraRaycast : MonoBehaviour
             if (newOutline == null)
                 newOutline = hit.collider.GetComponentInChildren<Outline>();
 
-            if (Input.GetKeyDown(KeyCode.E))
+            if (hit.collider.CompareTag("Npc") && Input.GetKeyDown(KeyCode.E))
             {
-                if (AuthorizedZone.isAuthorized)
+                if (!AuthorizedZone.isAuthorized)
                 {
-                    Debug.Log("Interact : " + hit.collider.name);
-
-                    Destroy(hit.collider.gameObject);
+                    Debug.Log("Masuk Authorized Zone dulu!");
+                    return;
                 }
                 else
                 {
-                    Debug.Log("Masuk Authorized Zone dulu!");
+                    NpcDanceInteract npc = hit.collider.GetComponentInParent<NpcDanceInteract>();
+
+                    if (npc != null)
+                    {
+                        npc.Interact();
+                        Debug.Log("NPC Dancing");
+                    }
+
+                    return;
                 }
             }
         }
@@ -94,6 +96,10 @@ public class CameraRaycast : MonoBehaviour
         else if (obj.CompareTag("Traffic Alert"))
         {
             actionText.text = "No Action";
+        }
+        else if (obj.CompareTag("Npc"))
+        {
+            actionText.text = "Tekan E di Authorized Zone untuk membuat NPC dance";
         }
         else
         {
