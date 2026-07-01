@@ -15,14 +15,18 @@ public class CameraRaycast : MonoBehaviour
 
     void Start()
     {
-        ClearUI();
+    Debug.Log("CameraRaycast aktif");
+    ClearUI();
     }
-
     void Update()
     {
-        RaycastCheck();
+    if (Input.GetKeyDown(KeyCode.E))
+    {
+        Debug.Log("E ditekan");
     }
 
+    RaycastCheck();
+    }
     void RaycastCheck()
     {
         Outline newOutline = null;
@@ -39,7 +43,16 @@ public class CameraRaycast : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.E))
             {
-                Debug.Log("Interact : " + hit.collider.name);
+                if (AuthorizedZone.isAuthorized)
+                {
+                    Debug.Log("Interact : " + hit.collider.name);
+
+                    Destroy(hit.collider.gameObject);
+                }
+                else
+                {
+                    Debug.Log("Masuk Authorized Zone dulu!");
+                }
             }
         }
 
